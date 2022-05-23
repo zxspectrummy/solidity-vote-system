@@ -74,4 +74,11 @@ contract VoteSystem is Ownable {
         ballot.votesCount[_candidateId]++;
         ballot.balance += voteFee;
     }
+
+    function closeVote(uint _ballotId) external {
+        Ballot storage currentBallot = ballots[_ballotId];
+        require(block.timestamp >= ballots[_ballotId].expirationTime, "Vote cannot be closed yet");
+        address payable _winner = payable(currentBallot.candidates[getWinner(_ballotId)].addr);
+        _winner.transfer((currentBallot.balance * 90) / 100);
+    }
 }

@@ -68,4 +68,22 @@ describe('Vote System', function () {
       voteSystem.connect(addr1).vote(0, 1, { value: ethers.utils.parseEther('0.01') })
     ).to.be.revertedWith('Vote is closed');
   });
+
+  it('vote can be closed', async () => {
+    await voteSystem.addVoting(ballot.description, ballot.candidates);
+    await voteSystem.addVoting('another vote', ballot.candidates);
+    await voteSystem.connect(addr2).vote(0, 1, { value: ethers.utils.parseEther('0.01') });
+    await ethers.provider.send('evm_increaseTime', [60 * 60 * 24 * 3]);
+    await expect(await voteSystem.connect(addr1).closeVote(0)).to.changeEtherBalance(
+      addr2,
+      ethers.utils.parseEther('0.009')
+    );
+  });
+
+  it('vote cannot be closed before the expiration time', async () => {
+    await voteSystem.addVoting(ballot.description, ballot.candidates);
+    await expect(voteSystem.connect(addr1).closeVote(0)).to.be.revertedWith(
+      'Vote cannot be closed yet'
+    );
+  });
 });
