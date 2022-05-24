@@ -79,6 +79,13 @@ contract VoteSystem is Ownable {
         emit VoteClosed(_ballotId);
     }
 
+    function withdrawFee(uint _ballotId) external onlyOwner {
+        Ballot storage ballot = ballots[_ballotId];
+        require(ballot.isOpen == false, "Cannot withdraw fee, the vote is still open");
+        address payable _owner = payable(owner());
+        _owner.transfer(address(this).balance);
+    }
+
     function _getWinnerCandidateAddress(uint _ballotId) private view returns (address) {
         return ballots[_ballotId].candidates[_getWinnerCandidateId(_ballotId)].addr;
     }

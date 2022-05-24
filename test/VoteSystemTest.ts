@@ -5,7 +5,7 @@ import { VoteSystem } from '../typechain';
 
 describe('Vote System', () => {
   let voteSystem: VoteSystem;
-  let addr1: SignerWithAddress, addr2: SignerWithAddress;
+  let owner: SignerWithAddress, addr1: SignerWithAddress, addr2: SignerWithAddress;
   let addrs: SignerWithAddress[];
   let ballot: {
     description: string;
@@ -16,7 +16,7 @@ describe('Vote System', () => {
     const VoteSystem = await ethers.getContractFactory('VoteSystem');
     voteSystem = await VoteSystem.deploy();
     await voteSystem.deployed();
-    [, addr1, addr2, ...addrs] = await ethers.getSigners();
+    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
     ballot = {
       description: 'Who wears it best?',
       candidates: [
@@ -135,7 +135,7 @@ describe('Vote System', () => {
       );
   });
 
-  it('vote cannot be closed if already closed', async () => {
+  it('should only allow to close once', async () => {
     await voteSystem
       .addVoting(ballot.description, ballot.candidates)
       .then(() => voteSystem.connect(addr1).vote(0, 0, { value: ethers.utils.parseEther('0.01') }))
@@ -143,6 +143,33 @@ describe('Vote System', () => {
       .then(() => voteSystem.connect(addr1).closeVote(0))
       .then(() =>
         expect(voteSystem.connect(addr1).closeVote(0)).to.be.revertedWith('Vote is already closed')
+      );
+  });
+
+  it('should allow owner to withdraw fee', async () => {
+    await voteSystem
+      .addVoting(ballot.description, ballot.candidates)
+      .then(() => voteSystem.addVoting('another vote', ballot.candidates))
+      .then(() => voteSystem.connect(addr2).vote(0, 1, { value: ethers.utils.parseEther('0.01') }))
+      .then(() => ethers.provider.send('evm_increaseTime', [60 * 60 * 24 * 3]))
+      .then(() => voteSystem.connect(addr1).closeVote(0))
+      .then(async () =>
+        expect(await voteSystem.withdrawFee(0)).to.changeEtherBalance(
+          owner,
+          ethers.utils.parseEther('0.001')
+        )
+      );
+  });
+
+  it('should allow owner to withdraw fee', async () => {
+    await voteSystem
+      .addVoting(ballot.description, ballot.candidates)
+      .then(() => voteSystem.addVoting('another vote', ballot.candidates))
+      .then(() => voteSystem.connect(addr2).vote(0, 1, { value: ethers.utils.parseEther('0.01') }))
+      .then(() =>
+        expect(voteSystem.withdrawFee(0)).to.be.revertedWith(
+          'Cannot withdraw fee, the vote is still open'
+        )
       );
   });
 });
