@@ -1,5 +1,9 @@
 node_modules
-artifacts
+typechain
 cache
 coverage*
 gasReporterOutput.json
+
+# files
+*.env
+*.log

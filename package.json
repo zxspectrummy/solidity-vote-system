@@ -8,7 +8,8 @@
     "chain": "npx hardhat node",
     "deploy": "npx hardhat run --network localhost scripts/deploy.ts",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/deploy.ts",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "prettier": "npx prettier \"**/*.{md,ts,sol}\" --write"
   },
   "keywords": [],
   "author": "",
