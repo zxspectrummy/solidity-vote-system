@@ -2,9 +2,8 @@ import { task, types } from 'hardhat/config';
 import { VoteSystem } from '../typechain';
 import { getVotingSystemContract } from './contract';
 import { TransactionResponse } from '@ethersproject/abstract-provider';
-import fs from 'fs'
+import fs from 'fs';
 import * as path from 'path';
-
 
 task('vote:cast', 'Cast a vote')
   .addParam('ballot', 'id of the ballot')
@@ -46,15 +45,20 @@ task('vote:withdraw-fee', "withdraw owner's fee")
   });
 
 task('vote:add', 'Create new vote')
-.addParam('description', 'ballot description')
-.addParam('candidates', 'input file containing candidate date as json array, see candidates.json.example')
-.setAction(async (taskArgs, hre) => {
-  return getVotingSystemContract(hre)
-    .then((contract: VoteSystem) => {
-      const candidateData = JSON.parse(fs.readFileSync(path.join(process.cwd(), taskArgs.candidates), 'utf-8'));
-      return contract.addVoting(taskArgs.description, candidateData);
-    })
-    .then((tr: TransactionResponse) => {
-      process.stdout.write(`TX hash: ${tr.hash}`);
-    });
-});
+  .addParam('description', 'ballot description')
+  .addParam(
+    'candidates',
+    'input file containing candidate date as json array, see candidates.json.example'
+  )
+  .setAction(async (taskArgs, hre) => {
+    return getVotingSystemContract(hre)
+      .then((contract: VoteSystem) => {
+        const candidateData = JSON.parse(
+          fs.readFileSync(path.join(process.cwd(), taskArgs.candidates), 'utf-8')
+        );
+        return contract.addVoting(taskArgs.description, candidateData);
+      })
+      .then((tr: TransactionResponse) => {
+        process.stdout.write(`TX hash: ${tr.hash}`);
+      });
+  });

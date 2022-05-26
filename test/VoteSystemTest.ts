@@ -42,6 +42,17 @@ describe('Vote System', () => {
     ).to.be.revertedWith('Ownable: caller is not the owner');
   });
 
+  it('should return candidate list on a ballot', async () => {
+    await voteSystem
+      .addVoting(ballot.description, ballot.candidates)
+      .then(() => {
+        return voteSystem.getCandidatesOnBallot(0);
+      })
+      .then((candidates) => {
+        expect(candidates).to.eql(ballot.candidates.map((c) => [c.name, c.addr]));
+      });
+  });
+
   it('should allow users to vote', async () => {
     await voteSystem
       .addVoting(ballot.description, ballot.candidates)

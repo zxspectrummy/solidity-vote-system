@@ -56,6 +56,16 @@ contract VoteSystem is Ownable {
         return ballotCount++;
     }
 
+    function getCandidatesOnBallot(uint _ballotId) external view returns (CandidateData[] memory) {
+        Ballot storage ballot = ballots[_ballotId];
+        uint candidateCount = ballot.candidateCount;
+        CandidateData[] memory candidates = new CandidateData[](candidateCount);
+        for (uint i = 0; i < candidateCount; i++) {
+            candidates[i] = CandidateData(ballot.candidates[i].name, ballot.candidates[i].addr);
+        }
+        return candidates;
+    }
+
     function vote(uint _ballotId, uint _candidateId) external payable {
         require(msg.value == voteFee, "Please provide the voting fee of 0.01 eth");
         Ballot storage ballot = ballots[_ballotId];
